@@ -11,3 +11,7 @@ web-vitals：性能检测工具
 browserslist：设置浏览器兼容情况
 
 %PUBLIC_URL%：后期webpack打包的时候，会对这个语法进行编译，代表public这个根目录
+
+react处理跨域：在src目录下新建setupProxy.js写处理跨域的逻辑
+通过npm install http-proxy-middleware 这个中间件进行跨域代理
+webpack-dev-serve的跨域代理也是基于http-proxy-middleware完成的
