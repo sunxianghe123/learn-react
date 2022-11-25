@@ -3,10 +3,13 @@ import ReactDOM from 'react-dom/client';
 import './index.less'
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
+
+const text = 'aaa';
 root.render(
-  <React.StrictMode>
-    <div>aaa</div>
-  </React.StrictMode>
+  <>
+    <div>{text}</div>
+    <p></p>
+  </>
 );
 
 fetch('/jian/subscriptions/recommended_collections')

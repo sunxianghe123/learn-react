@@ -15,3 +15,26 @@ browserslist：设置浏览器兼容情况
 react处理跨域：在src目录下新建setupProxy.js写处理跨域的逻辑
 通过npm install http-proxy-middleware 这个中间件进行跨域代理
 webpack-dev-serve的跨域代理也是基于http-proxy-middleware完成的
+
+React.Fragment：<></>  空文档标记标签，既保证了可以只有一个根节点，又不会新增一个HTML层级结构
+
+{}：胡子语法，内部存放 JS表达式（执行后有返回值的）
+  + number/string:值是什么，渲染的就是啥
+  + boolean/null/undefined/Symbol/BigInt:渲染的内容是空
+  + 除数组对象外，其余对象一般都不支持在{}中进行渲染，但也有特殊情况
+    + JSX虚拟DOM对象
+    + 给元素设置style行内样式，要求必须写成一个对象格式
+  + 数组：把数组中的每一项分别拿出来渲染
+  + 函数：不支持在{}中渲染，但是可以作为函数组件，用<Component/>方式渲染
+
+@6. 给元素设置样式
+  + 行内样式：基于对象的格式处理，直接写样式字符串会报错
+    ```
+    <h2 style={{ color: 'red', fontSize: '18px' }}>
+    ```
+  + 设置样式类名：需要把class替换为className
+    ```
+    <h2 className='box'>
+    ```
+
+jsx中循环渲染列表，用Array.map方法    循环都需要家key值，用于dom-diff
