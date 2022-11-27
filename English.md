@@ -24,4 +24,12 @@
 * impede   妨碍，阻碍
 * spring   春天，弹簧，发条，泉 跳，蹦
 * biological 生物的
-* 
+* impede   阻碍，妨碍
+* deduce   推断，推理
+* doctorate 博士学位
+* theoretical 理论的
+* internship 实习期的工作
+* slender  细长的，苗条的
+* respondent 调查对象，被告
+* surroundings 环境，周围事物
+* voluntary 自愿的，无偿的
