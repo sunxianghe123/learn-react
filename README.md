@@ -79,3 +79,40 @@ jsx中循环渲染列表，用Array.map方法    循环都需要家key值，用�
     + 把virtualDOM中的props，作为实参传递给函数 -> DemoOne(props) props作为父组件给子函数组件传递的参数
     + 接收函数执行的返回结果，交给createElement方法处理，生成virtualDOM对象[也就是当前组件的virtualDOM对象]
     + 最后基于render把组件返回的虚拟DOM变为真实DOM ，插入到#root容器中
+
+
+属性props的处理
++ 调用组件，传递进来的属性是“只读”的
+  获取：props.xxx
++ 作用：父组件调用子组件的时候，可以基于属性，把信息传递给子组件，让组件的复用性更强
++ 虽然不能修改props，但是可以做一些规则校验
+  + 设置默认值：把函数组件看作类，设置静态私有属性方法
+  + 设置其他规则，例如：数据值格式、是否必传……（依赖一个官方插件prop-types）
+
+react中插槽的处理
++ 父组件调用时，直接在子组件双闭合标签中填入dom元素，react会把每一个dom元素变为virtualDOM传进props
++ 子组件通过props.children获取传递的子节点信息
++ 可以基于React.Children对象中提供的方法，对props.children做处理：count/forEach/map/toArray...
+  好处： 在这些方法的内部，已经对children的各种形式做了处理
+  let {children} = props;
+  React.Children.forEach(children, ()=>{});
+
+
+静态组件和动态组件
+1. 函数组件是“静态组件”
+  第一次渲染组件的时候，把函数执行
+    + 产生一个私有的上下文
+    + 把解析出来的props[含children]传递进来[但是被冻结了]
+    + 对返回的JSX元素[virtualDOM]进行渲染
+  当我们点击按钮的时候，会把绑定的小函数执行：
+    + 修改上级上下文中的的变量
+    + 私有变量值发生了改变，
+    + 但是视图不会更新
+  =>函数组件第一次渲染完毕后，组件中的内容，不会根据组件内的某些操作再进行更新，所以称它为静态组件
+  =>除非再父组件中，重新调用这个函数组件[可以传递不同的属性信息]
+
+2. 第一次渲染完毕后，基于组件内部的某些操作，让组件可以更新 ==> 动态组件
+  方法：类组件、Hooks组件（在函数组件中使用Hooks函数）
+  创建类组件：
+    + 创建一个构造函数（类），要求必须继承React.Component/PureComponent这个类
+    + 使用extends继承，必须给当前类设置一个render方法[放在其原型上]：在render方法中，返回需要渲染的视图

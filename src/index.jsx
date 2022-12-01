@@ -1,14 +1,13 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import DemoOne from './views/DemoOne';
 import './index.less'
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
-const text = 'aaa';
 root.render(
   <>
-    <div>{text}</div>
-    <p></p>
+    <DemoOne></DemoOne>
   </>
 );
 
