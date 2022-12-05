@@ -98,7 +98,7 @@ react中插槽的处理
   React.Children.forEach(children, ()=>{});
 
 
-静态组件和动态组件
+# 静态组件和动态组件
 1. 函数组件是“静态组件”
   第一次渲染组件的时候，把函数执行
     + 产生一个私有的上下文
@@ -116,3 +116,77 @@ react中插槽的处理
   创建类组件：
     + 创建一个构造函数（类），要求必须继承React.Component/PureComponent这个类
     + 使用extends继承，必须给当前类设置一个render方法[放在其原型上]：在render方法中，返回需要渲染的视图
+
+React基于extends实现继承：
+  1. 首先基于call继承 React.Component.call(this) 让this指向当前类组件的实例
+    function Component(props, context, updater) {...} Component方法接收三个参数
+    给创建的实例设置四个私有属性：props/context/refs/updater
+  2. 再基于原型继承 xxx.prototype.__proto__ = React.Component.prototype
+    实例具备了除当前类的方法之外，还具备了React.Component.prototype原型上提供的方法：
+    isReactComponent、setState、forceUpdate
+  3. 只要类组件中设置了constructor，则constructor内部第一句话一定要执行super()
+    执行super()等价于React.Component.call(this)
+    在super()中传值，相当于给React.Component.call(this,xxx,xxx,xxx,...)传参
+    super(10, {}, {})
+  4. 如果在类组件中不写constructor，相当于默认执行constructor(){ super() }
+
+
+render函数在渲染的时候，如果type是：
+  + 字符串：创建一个标签
+  + 普通函数：把函数执行，并且把props传递给函数
+  + 构造函数：把构造函数基于new执行[也就是创建类的一个实例]，也会把解析出来的props传递过去
+    + 每调用一次组件都会创建一个单独的实例
+    + 把在类组件中编写的render函数执行，把返回的jsx[virturalDOM]当作组件视图进行渲染
+    + 例如：new Vote({title: 'xxxx'});
+
+# 从调用类组件[new Vote({...})]开始，类组件内部发生的事情：
+  1. 初始化属性 && 规则校验
+      方案一：
+      constructor(props) {
+        super(props); // 会把传递进来的属性挂载到this实例上
+        console.log(this.props); // 获取到传递的属性
+      }
+      方案二：
+      即使我们自己不在constructor中处理[或者constructor都没写]，在constructor处理完毕后，
+      React内部也会把传递的props挂载到实例上；所以在其他的函数中，只要保证this是实例，就可以基于
+      this.props获取传递的属性
+      + 同样this.props获取的属性对象也是被冻结的{只读的} Object.isFrozen(this.props) -> true
+  2. 初始化状态
+    状态：后期修改状态，可以触发视图的更新
+    需要手动初始化，如果我们没有做相关的处理，则默认会往实例上挂载一个state，初始值是null => this.state=null
+    手动处理： 
+    state = {
+      ...
+    }
+    修改状态，控制视图更新：
+    想让视图更新，我们需要基于React.Component.prototype提供的方法操作：
+    @1 this.setState(partialState, callback) 既可以修改状态，也可以更新视图
+      partialState:部分状态
+    @2 this.forceUpdate() 强制更新
+  3. 触发 componentWillMount 周期函数（钩子函数）
+    钩子函数：在程序运行到某个阶段，我们可以提供一个处理函数，让开发者在这个阶段做一些自定义的事情
+    此周期函数，目前是不安全的（未来可能要被移除），不建议使用
+    + 使用此方法，控制台会报黄色警告。为了不报黄色警告，可以加个前缀 UNSAFE_componentWillMount
+  4. 触发render周期函数：渲染render返回的视图
+  5. 触发componentDidMount 周期函数：第一次渲染完毕
+    + 页面中已经创建了真实DOM元素[此时可以获取真实DOM了]
+
+组件更新的逻辑[当修改了相关状态，组件会更新]
+  1. 触发 shouldComponentUpdate 周期函数：是否允许更新
+    shouldComponentUpdate(nextProps, nextState) {
+      // nextState:存储要修改的最新状态
+      // this.state:存储的是修改前的状态
+      console.log(this.state, nextState);
+      // 此周期函数需要返回true/false
+      // 返回true：允许更新，会执行下一个操作
+      // 返回false：不允许更新，接下来啥都不处理
+      return true;
+    }
+  2. 触发componentWillUpdate 与 componentWillMount一样，也是不安全的
+    + 在这个阶段，状态还没被修改
+  3. 修改状态值[让this.state.xxx改为最新的值]
+  4. 触发render周期函数：组件更新
+    + 按照最新的状态/属性，把返回的JSX编译为virtualDOM
+    + 和上一次渲染出来的virtualDOM进行对比[DOM-DIFF]
+    + 把差异的部分进行渲染[渲染为真实的DOM]
+  5. 触发componentDidUpdate周期函数：组件更新完毕
