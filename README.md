@@ -99,6 +99,15 @@ react中插槽的处理
 
 
 # 静态组件和动态组件
+函数组件是“静态组件”：
+  + 组件第一次渲染完毕后，无法基于“内部的某些操作”让组件更新[无法实现“自更新”]；但是如果调用它的父组件更新了，那么相关的子组件也一定会更新[可能传递最新的属性值进来]
+  + 函数组件具备：属性 [其他的状态等内容几乎都没有]
+  + 优势：比类组件处理的机制简单，这样导致函数组件的渲染速度更快
+类组件是“动态组件”：
+  + 组件在第一次渲染完毕后，除了父组件更新可以触发其更新，我们可以通过：this.setState 修改状态 或者 this.forceUpdate 等方式，让组件实现“自更新”
+  + 类组件具备：属性、状态、周期函数、ref...[几乎组件应该有的东西它都具备]
+  + 优势：功能强大
+===> Hooks组件[推荐]：具备了函数组件和类组件的各自优势，在函数组件的基础上，基于hooks函数，让函数组件也可以拥有状态、周期函数等，让函数组件也可也实现自更新[动态化]
 1. 函数组件是“静态组件”
   第一次渲染组件的时候，把函数执行
     + 产生一个私有的上下文
@@ -111,7 +120,7 @@ react中插槽的处理
   =>函数组件第一次渲染完毕后，组件中的内容，不会根据组件内的某些操作再进行更新，所以称它为静态组件
   =>除非再父组件中，重新调用这个函数组件[可以传递不同的属性信息]
 
-2. 第一次渲染完毕后，基于组件内部的某些操作，让组件可以更新 ==> 动态组件
+1. 第一次渲染完毕后，基于组件内部的某些操作，让组件可以更新 ==> 动态组件
   方法：类组件、Hooks组件（在函数组件中使用Hooks函数）
   创建类组件：
     + 创建一个构造函数（类），要求必须继承React.Component/PureComponent这个类
@@ -171,7 +180,7 @@ render函数在渲染的时候，如果type是：
   5. 触发componentDidMount 周期函数：第一次渲染完毕
     + 页面中已经创建了真实DOM元素[此时可以获取真实DOM了]
 
-组件更新的逻辑[当修改了相关状态，组件会更新]
+组件内部更新的逻辑[当修改了相关状态，组件会更新]
   1. 触发 shouldComponentUpdate 周期函数：是否允许更新
     shouldComponentUpdate(nextProps, nextState) {
       // nextState:存储要修改的最新状态
@@ -190,3 +199,22 @@ render函数在渲染的时候，如果type是：
     + 和上一次渲染出来的virtualDOM进行对比[DOM-DIFF]
     + 把差异的部分进行渲染[渲染为真实的DOM]
   5. 触发componentDidUpdate周期函数：组件更新完毕
+  特殊说明：如果我们是基于 this.forceUpdate() 强制更新视图，会跳过 shouldComponentUpdate 周期函数校验，
+  直接从 componentWillUpdate 开始更新[也就是：视图一定会更新] 就算没有状态更新，也会重新编译virtualDOM,
+  再进行DOM-DIFF，会浪费性能
+
+父组件更新，触发子组件更新：
+  1. 触发 componentWillReceiveProps 周期函数：在接收最新属性之前
+    + 此周期函数是不安全的
+    UNSAFE_componentWillReceiveProps(nextProps) {
+      console.log(this.props, nextProps);
+    }
+  2. shouldComponentUpdate...
+  深度优先原则：父组件在操作中，遇到子组件，一定是把子组件处理完，父组件才继续处理
+  + 父组件第一次渲染：父willMount -> 父render [子willMount -> 子render -> 子didMount] -> 父didMount
+  + 父组件更新：父shouldUpdate -> 父render [子WillReceiveProps -> 子shouldUpdate -> 子willUpdate -> 子render ->子didUpdate] -> 父didUpdate
+  + 父组件销毁：父willUnmount -> 处理[子willUnmount -> 子销毁] -> 父销毁
+
+组件卸载的逻辑：
+  1. 触发 componentWillUnmount 周期函数：组件销毁之前
+  2. 销毁

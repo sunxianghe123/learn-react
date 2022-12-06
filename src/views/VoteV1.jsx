@@ -64,6 +64,14 @@ class Vote extends React.Component {
   componentDidUpdate() {
     console.log('组件更新完毕');
   }
+
+  UNSAFE_componentWillReceiveProps(nextProps) {
+    console.log(this.props, nextProps);
+  }
+
+  componentWillUnmount() {
+    console.log('componentWillUnmount');
+  }
 }
 
 export default Vote;
