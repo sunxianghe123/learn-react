@@ -183,7 +183,7 @@ render函数在渲染的时候，如果type是：
 组件内部更新的逻辑[当修改了相关状态，组件会更新]
   1. 触发 shouldComponentUpdate 周期函数：是否允许更新
     shouldComponentUpdate(nextProps, nextState) {
-      // nextState:存储要修改的最新状态
+      // nextProps/nextState:将要修改的属性状态
       // this.state:存储的是修改前的状态
       console.log(this.state, nextState);
       // 此周期函数需要返回true/false
@@ -218,3 +218,33 @@ render函数在渲染的时候，如果type是：
 组件卸载的逻辑：
   1. 触发 componentWillUnmount 周期函数：组件销毁之前
   2. 销毁
+
+PureComponent和Component的区别:
+PureComponent会给类组件默认加一个shouldComponentUpdate周期函数
+  + 在此周期函数中，它对新老的属性/状态 会坐一个浅比较
+  + 如果经过浅比较，发现属性和状态并没有改变，则返回false[也就是不继续更新组件]，有变化才会去更新
+    ```
+    // 检测是否为对象
+    const isObject = function isObject(obj) {
+      return obj !== null && /^(object|function)$/.test(typeof obj);
+    }
+    // 对象浅比较方法
+    const shallowEqual = function shallowEqual(objA, objB) {
+      if(!isObject(objA) || !isObject(objB)) return false;
+      if(objA === objB) return true;
+      // 先比较成员的数量
+      let keysA = Reflect.ownKeys(objA),
+          keysB = Reflect.ownKeys(objB);
+      if(keysA.length !== keysB.length) return false;
+      // 数量一致，再逐一比较内部的成员[只比较第一级：浅比较]
+      for(let i = 0; i < keysA.lenght; i++) {
+        let key = keysA[i];
+        // 如果一个对象中有这个成员，一个对象中没有；或者，都有这个成员，但是成员值不一样；都应该呗判定为不相同
+        if(!objB.hasOwnProperty(key) || !Object.is(objA[key], objB[key])) {
+          return false;
+        }
+      }
+      // 以上都处理完，发现没有不相同的成员，则认为两个对象是相等的
+      return true;
+    }
+    ```
