@@ -248,3 +248,42 @@ PureComponent会给类组件默认加一个shouldComponentUpdate周期函数
       return true;
     }
     ```
+
+### 基于Ref操作的详细解读
+  受控组件：基于修改数据/状态，让视图更新，达到需要的效果
+  非受控组件：基于ref获取DOM元素，我们操作DOM元素，来实现需求和效果[偶尔]
+    基于ref获取DOM元素的语法
+    1. 给需要获取的元素设置ref="xxx"，后期基于this.refs.xxx去获取DOM元素[不推荐使用]
+    2. 把ref属性值设置为一个函数
+       ref={x=>this.xxx=x}
+        + x是函数的形参：存储的就算当前DOM元素
+        + 然后我们把获取的DOM元素“x”直接挂载到实例的某个属性上
+    3. 基于React.createRef()方法创建一个ref对象 -> {current:null}
+       ref={REF对象(this.xxx)}
+       获取：this.xxx.current
+
+    原理：在render渲染的时候，会获取virtualDOM的ref属性
+      + 如果属性值是一个字符串，则会给this.refs增加这样的一个成员，成员值就是当前的DOM元素
+      + 如果属性值是一个函数，则会把函数执行，把当前DOM元素传递给这个函数[x->DOM元素]，而在函数执行内部，我们一般都会把DOM元素直接挂载到实例的某个属性上
+      + 如果属性值是一个REF对象，则会把DOM元素赋值给对象的current属性
+  给元素标签设置ref，目的：获取对应的DOM元素
+  给类组件设置ref，目的：获取当前组件的实例
+  给函数组件设置ref会报错
+    + 但是我们可以让其配合 React.forwardRef 实现ref的转发
+    + 目的：获取函数子组件内部的某个元素
+
+  this.setState([partialState], [callback])
+    [partialState]:支持部分状态更改
+    [callback]:在状态更改，视图更新完毕后触发执行[也可以说只要执行力setState，callback一定会执行]
+      + 发生在componentDidUpdate周期函数之后[DidUpdate会在任何状态更改后都触发执行，而回调函数方式可以在指定状态更新后执行]
+      + 特殊：即便我们基于shouldComponentUpdate阻止了状态/视图的更新，DidUpdate周期函数不会执行了，但是我们设置的callback回调函数依然会被触发执行
+      + 类似于vue中的$nextTick()
+  在React18中，setState在任何地方执行，都是“异步操作”
+    + React18中有一套更新队列的机制
+    + 基于异步操作，实现状态的“批处理”
+  优势：
+    + 减少视图更新的次数，降低渲染消耗的性能
+    + 让更新的逻辑和流程更清晰
+  原理：有一个更新队列updater，每次执行setState不会立即更新状态和视图，而是加到updater更新队列中
+        当上下文中的代码都处理完毕后，会让更新队列中的任务，统一渲染/更新一次[批处理] -> 走周期函数... render
+        只触发一次视图更新

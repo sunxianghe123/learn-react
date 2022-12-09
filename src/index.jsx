@@ -1,13 +1,13 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import DemoTwo from './views/Demo2';
+import Demo from './views/Demo5';
 import './index.less'
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
 root.render(
   <>
-    <DemoTwo></DemoTwo>
+    <Demo></Demo>
   </>
 );
 
