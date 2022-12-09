@@ -287,3 +287,27 @@ PureComponent会给类组件默认加一个shouldComponentUpdate周期函数
   原理：有一个更新队列updater，每次执行setState不会立即更新状态和视图，而是加到updater更新队列中
         当上下文中的代码都处理完毕后，会让更新队列中的任务，统一渲染/更新一次[批处理] -> 走周期函数... render
         只触发一次视图更新
+  在React18和React16中，关于setState是同步还是异步，是有区别的：
+    React18中：不论在什么地方执行setState，它都是异步的[基于updater更新队列机制，实现的批处理]
+    React16中：如果在合成事件、周期函数中，setState的操作是异步的，但是如果setState出现在其他异步操作中
+               [例如：定时器、手动获取DOM元素做的事件绑定等]，它将变为同步的操作[立即更新状态和让视图渲染]
+  flushSync方法：可以刷新“updater更新队列”，也就是让修改状态的任务立即处理一次
+    + 在flushSync操作结束后，会立即刷新更新队列
+    + 用法：
+          import {flushSync} from 'react-dom';
+          flushSync(()=>{
+            this.setState({ y: y + 1 })
+          });
+          flushSync();
+
+  this.setState((prevState)=>{
+    // prevState：存储之前的状态值
+    // return的对象，就算我们想要修改的新状态之[支持修改部分状态]
+    return {
+      xxx:xxx
+    }
+  })
+  原理：这样做是把回调函数放入队列，批处理把函数依次执行，得到最后的处理结果再去渲染
+       利用了函数的闭包机制，拿到上一次处理的结果
+
+  合成事件：在React中，通过onxxx绑定的事件叫做合成事件
